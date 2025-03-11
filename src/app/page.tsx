@@ -1,18 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { DndContext, type DragEndEvent, closestCenter, DragOverlay } from "@dnd-kit/core"
-import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { DndContext, type DragEndEvent, closestCenter, DragOverlay, type DragStartEvent } from "@dnd-kit/core"
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { JobColumn } from "@/components/job-column"
 import { JobCard } from "@/components/job-card"
-import { AddJobForm } from "@/components/add-job-form"
-import { Button } from "@/components/ui/button"
-import { PlusIcon } from "lucide-react"
+import { AddJobModal } from "@/components/add-job-modal"
 import type { Job, Column } from "@/lib/types"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function JobTracker() {
-  const [showForm, setShowForm] = useState(false)
   const [jobs, setJobs] = useState<Job[]>([
     {
       id: "1",
@@ -57,6 +54,7 @@ export default function JobTracker() {
   ])
 
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [isChange, setIsChange] = useState<boolean | null>(false)
 
   const columns: Column[] = [
     { id: "no-response", title: "No Response" },
@@ -65,50 +63,39 @@ export default function JobTracker() {
     { id: "offered", title: "Offered" },
   ]
 
-  function handleDragStart(event: { active: { id: string } }) {
+  function handleDragStart(event: DragStartEvent) {
+    setIsChange(true)
     setActiveId(event.active.id as string)
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
-    setActiveId(null)
 
-    if (!over) return
-
-    const activeId = active.id as string
-    const overId = over.id as string
-
-    // If dropping on another job card
-    if (activeId !== overId) {
-      const activeJob = jobs.find((job) => job.id === activeId)
-      const overJob = jobs.find((job) => job.id === overId)
-
-      if (activeJob && overJob) {
-        // If dropping on a job in the same column, reorder
-        if (activeJob.status === overJob.status) {
-          const oldIndex = jobs.findIndex((job) => job.id === activeId)
-          const newIndex = jobs.findIndex((job) => job.id === overId)
-
-          setJobs(arrayMove(jobs, oldIndex, newIndex))
-        }
-      }
+    if (!over) {
+      setIsChange(false)
+      setActiveId(null)
+      return
     }
+
+    const overId = over.id as string
 
     // If dropping on a column
     const targetColumn = columns.find((col) => col.id === overId)
     if (targetColumn) {
       setJobs(jobs.map((job) => (job.id === activeId ? { ...job, status: targetColumn.id } : job)))
     }
+    setIsChange(false)
+    setActiveId(null)
   }
 
   function handleDragCancel() {
+    setIsChange(false)
     setActiveId(null)
   }
 
   const addJob = (newJob: Omit<Job, "id">) => {
     const id = Math.random().toString(36).substring(2, 9)
     setJobs([...jobs, { ...newJob, id }])
-    setShowForm(false)
   }
 
   return (
@@ -117,18 +104,9 @@ export default function JobTracker() {
         <h1 className="text-3xl font-bold">Job Application Tracker</h1>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
-            <PlusIcon className="h-4 w-4" />
-            Add Job
-          </Button>
+          <AddJobModal onAddJob={addJob} />
         </div>
       </div>
-
-      {showForm && (
-        <div className="mb-8">
-          <AddJobForm onSubmit={addJob} onCancel={() => setShowForm(false)} />
-        </div>
-      )}
 
       <DndContext
         collisionDetection={closestCenter}
@@ -147,9 +125,10 @@ export default function JobTracker() {
                 strategy={verticalListSortingStrategy}
               >
                 <JobColumn id={column.id} title={column.title} count={columnJobs.length}>
-                  {columnJobs.map((job) => (
-                    <JobCard key={job.id} job={job} onDelete={(id) => setJobs(jobs.filter((job) => job.id !== id))} />
-                  ))}
+                  {!isChange &&
+                    columnJobs.map((job) => (
+                      <JobCard key={job.id} job={job} onDelete={(id) => setJobs(jobs.filter((job) => job.id !== id))} />
+                    ))}
                 </JobColumn>
               </SortableContext>
             )
