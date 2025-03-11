@@ -1,101 +1,181 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState } from "react"
+import { DndContext, type DragEndEvent, closestCenter, DragOverlay } from "@dnd-kit/core"
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { JobColumn } from "@/components/job-column"
+import { JobCard } from "@/components/job-card"
+import { AddJobForm } from "@/components/add-job-form"
+import { Button } from "@/components/ui/button"
+import { PlusIcon } from "lucide-react"
+import type { Job, Column } from "@/lib/types"
+import { ThemeToggle } from "@/components/theme-toggle"
+
+export default function JobTracker() {
+  const [showForm, setShowForm] = useState(false)
+  const [jobs, setJobs] = useState<Job[]>([
+    {
+      id: "1",
+      company: "Tech Solutions Inc.",
+      position: "Frontend Developer",
+      date: "2023-03-01",
+      notes: "Applied via company website",
+      status: "no-response",
+    },
+    {
+      id: "2",
+      company: "Digital Innovations",
+      position: "UX Designer",
+      date: "2023-03-05",
+      notes: "Referred by John",
+      status: "interview",
+    },
+    {
+      id: "3",
+      company: "Global Systems",
+      position: "Full Stack Developer",
+      date: "2023-02-20",
+      notes: "Phone screen scheduled",
+      status: "interview",
+    },
+    {
+      id: "4",
+      company: "Creative Labs",
+      position: "Product Manager",
+      date: "2023-02-15",
+      notes: "Rejected after final round",
+      status: "denied",
+    },
+    {
+      id: "5",
+      company: "Future Tech",
+      position: "Software Engineer",
+      date: "2023-03-10",
+      notes: "Offer received, negotiating salary",
+      status: "offered",
+    },
+  ])
+
+  const [activeId, setActiveId] = useState<string | null>(null)
+
+  const columns: Column[] = [
+    { id: "no-response", title: "No Response" },
+    { id: "denied", title: "Denied" },
+    { id: "interview", title: "Interview" },
+    { id: "offered", title: "Offered" },
+  ]
+
+  function handleDragStart(event: { active: { id: string } }) {
+    setActiveId(event.active.id as string)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over) return
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    // If dropping on another job card
+    if (activeId !== overId) {
+      const activeJob = jobs.find((job) => job.id === activeId)
+      const overJob = jobs.find((job) => job.id === overId)
+
+      if (activeJob && overJob) {
+        // If dropping on a job in the same column, reorder
+        if (activeJob.status === overJob.status) {
+          const oldIndex = jobs.findIndex((job) => job.id === activeId)
+          const newIndex = jobs.findIndex((job) => job.id === overId)
+
+          setJobs(arrayMove(jobs, oldIndex, newIndex))
+        }
+      }
+    }
+
+    // If dropping on a column
+    const targetColumn = columns.find((col) => col.id === overId)
+    if (targetColumn) {
+      setJobs(jobs.map((job) => (job.id === activeId ? { ...job, status: targetColumn.id } : job)))
+    }
+  }
+
+  function handleDragCancel() {
+    setActiveId(null)
+  }
+
+  const addJob = (newJob: Omit<Job, "id">) => {
+    const id = Math.random().toString(36).substring(2, 9)
+    setJobs([...jobs, { ...newJob, id }])
+    setShowForm(false)
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="container mx-auto p-4">
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Job Application Tracker</h1>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+            <PlusIcon className="h-4 w-4" />
+            Add Job
+          </Button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      {showForm && (
+        <div className="mb-8">
+          <AddJobForm onSubmit={addJob} onCancel={() => setShowForm(false)} />
+        </div>
+      )}
+
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
+      >
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {columns.map((column) => {
+            const columnJobs = jobs.filter((job) => job.status === column.id)
+
+            return (
+              <SortableContext
+                key={column.id}
+                items={columnJobs.map((job) => job.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <JobColumn id={column.id} title={column.title} count={columnJobs.length}>
+                  {columnJobs.map((job) => (
+                    <JobCard key={job.id} job={job} onDelete={(id) => setJobs(jobs.filter((job) => job.id !== id))} />
+                  ))}
+                </JobColumn>
+              </SortableContext>
+            )
+          })}
+        </div>
+
+        <DragOverlay>
+          {activeId ? (
+            <JobCard
+              job={
+                jobs.find((job) => job.id === activeId) || {
+                  id: "",
+                  company: "",
+                  position: "",
+                  date: "",
+                  notes: "",
+                  status: "",
+                }
+              }
+              onDelete={() => {}}
+              isDragging
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
-  );
+  )
 }
+
