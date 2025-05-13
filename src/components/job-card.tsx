@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Job } from "@/lib/types";
@@ -11,10 +13,11 @@ import { format } from "date-fns";
 interface JobCardProps {
 	job: Job;
 	onDelete: (id: string) => void;
+	onEdit: (job: Job) => void;
 	isDragging?: boolean;
 }
 
-export function JobCard({ job, onDelete, isDragging = false }: JobCardProps) {
+export function JobCard({ job, onDelete, onEdit, isDragging = false }: JobCardProps) {
 	const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
 		id: job.id,
 	});
@@ -26,18 +29,29 @@ export function JobCard({ job, onDelete, isDragging = false }: JobCardProps) {
 
 	const formattedDate = job.date ? format(new Date(job.date), "MMM d, yyyy") : "";
 
+	const handleCardClick = (e: React.MouseEvent) => {
+		// Prevent opening edit modal when clicking delete button or drag handle
+		if ((e.target as HTMLElement).closest("button")) return;
+		if ((e.target as HTMLElement).closest(".drag-handle")) return;
+
+		onEdit(job);
+	};
+
 	return (
 		<Card
 			ref={setNodeRef}
 			style={style}
 			className={`relative ${
-				isDragging ? "shadow-lg ring-2 ring-primary bg-background/75" : ""
+				isDragging
+					? "shadow-lg ring-2 ring-primary bg-background/75"
+					: "cursor-pointer"
 			}`}
+			onClick={handleCardClick}
 		>
 			<div
 				{...attributes}
 				{...listeners}
-				className="absolute left-2 top-3 cursor-grab text-muted-foreground"
+				className="absolute left-2 top-3 cursor-grab text-muted-foreground drag-handle"
 			>
 				<GripVertical className="h-5 w-5" />
 			</div>
@@ -48,7 +62,10 @@ export function JobCard({ job, onDelete, isDragging = false }: JobCardProps) {
 						variant="ghost"
 						size="icon"
 						className="h-7 w-7 text-muted-foreground hover:text-destructive"
-						onClick={() => onDelete(job.id)}
+						onClick={(e) => {
+							e.stopPropagation();
+							onDelete(job.id);
+						}}
 					>
 						<Trash2Icon className="h-4 w-4" />
 					</Button>
