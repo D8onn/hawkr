@@ -32,7 +32,7 @@ export function AddJobModal({ onAddJob }: AddJobModalProps) {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button className="flex items-center gap-2">
+				<Button className="flex items-center gap-2 cursor-pointer">
 					<PlusIcon className="h-4 w-4" />
 					Add Job
 				</Button>

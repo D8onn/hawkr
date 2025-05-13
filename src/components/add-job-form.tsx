@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,21 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { Job } from "@/lib/types";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 interface AddJobFormProps {
 	onSubmit: (job: Omit<Job, "id">) => void;
 	onCancel: () => void;
+	initialData?: Job;
+	submitLabel?: string;
 }
 
-export function AddJobForm({ onSubmit, onCancel }: AddJobFormProps) {
+export function AddJobForm({
+	onSubmit,
+	onCancel,
+	initialData,
+	submitLabel = "Add Job",
+}: AddJobFormProps) {
 	const [formData, setFormData] = useState<Omit<Job, "id">>({
 		company: "",
 		position: "",
@@ -29,6 +37,19 @@ export function AddJobForm({ onSubmit, onCancel }: AddJobFormProps) {
 		notes: "",
 		status: "no-response",
 	});
+
+	// If initialData is provided, use it to populate the form
+	useEffect(() => {
+		if (initialData) {
+			setFormData({
+				company: initialData.company,
+				position: initialData.position,
+				date: initialData.date,
+				notes: initialData.notes,
+				status: initialData.status,
+			});
+		}
+	}, [initialData]);
 
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -85,10 +106,7 @@ export function AddJobForm({ onSubmit, onCancel }: AddJobFormProps) {
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="status">Status</Label>
-						<Select
-							value={formData.status}
-							onValueChange={handleSelectChange}
-						>
+						<Select onValueChange={handleSelectChange}>
 							<SelectTrigger id="status">
 								<SelectValue placeholder="Select status" />
 							</SelectTrigger>
@@ -113,17 +131,10 @@ export function AddJobForm({ onSubmit, onCancel }: AddJobFormProps) {
 				</div>
 			</CardContent>
 			<CardFooter className="flex justify-end gap-2 pt-4">
-				<Button
-					type="button"
-					variant="outline"
-					onClick={onCancel}
-					className="cursor-pointer"
-				>
+				<Button type="button" variant="outline" onClick={onCancel}>
 					Cancel
 				</Button>
-				<Button type="submit" className="cursor-pointer">
-					Add Job
-				</Button>
+				<Button type="submit">{submitLabel}</Button>
 			</CardFooter>
 		</form>
 	);
