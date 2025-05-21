@@ -1,3 +1,4 @@
+import { Application } from "@/lib/types";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { redirect } from "next/navigation";
 import postgres from "postgres";
@@ -26,4 +27,23 @@ export function encodedRedirect(
 export function getDB(connectionString: string) {
 	const client = postgres(connectionString, { prepare: false });
 	return drizzle(client);
+}
+
+/**
+ *
+ * @param app - The application object to validate.
+ * @returns {boolean} - Returns true if the application is valid.
+ * @throws Will throw an error if any of the required fields are missing.
+ */
+export function validateApplication(app: Application) {
+	if (!app.company) {
+		throw new Error("Company name is required");
+	}
+	if (!app.position) {
+		throw new Error("Position name is required");
+	}
+	if (!app.status) {
+		throw new Error("Status is required");
+	}
+	return true;
 }

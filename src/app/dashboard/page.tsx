@@ -1,7 +1,8 @@
+"use server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import JobTracker from "./content";
-import { getAllApplications } from "@/utils/queries";
+import { getAllApplications } from "@/db/queries";
 
 // the Dashboard Server Page
 export default async function Dashboard() {

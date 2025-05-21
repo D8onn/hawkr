@@ -2,7 +2,7 @@ import { users, applications } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { User } from "@supabase/auth-js";
 import { Application } from "@/lib/types";
-import { getDB } from "./utils";
+import { getDB } from "@/utils/utils";
 
 // Function to get all applications for a user from the database
 // This function is used to fetch all the applications for a user from the database

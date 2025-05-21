@@ -1,5 +1,5 @@
 export interface Application {
-	id: number;
+	id: number | string;
 	company: string;
 	position: string;
 	date: string | null;

@@ -15,6 +15,7 @@ import { AddJobModal } from "@/components/add-job-modal";
 import { EditJobModal } from "@/components/edit-job-modal";
 import type { Application, Column } from "@/lib/types";
 import UserNav from "@/components/user-nav";
+import { addJob, updateJob } from "./actions";
 
 export default function JobTracker({
 	children,
@@ -28,7 +29,7 @@ export default function JobTracker({
 	const [apps, setApps] = useState<Application[]>(applications || []);
 	const [activeId, setActiveId] = useState<number | null>(null);
 	const [isChange, setIsChange] = useState<boolean | null>(false);
-	const [editingJob, setEditingJob] = useState<Application | null>();
+	const [editingJob, setEditingJob] = useState<Application | null>(null);
 
 	// Define the columns for the application statuses and their titles
 	const columns: Column[] = [
@@ -72,16 +73,6 @@ export default function JobTracker({
 		setIsChange(false);
 		setActiveId(null);
 	}
-
-	const addJob = (newApps: Omit<Application, "id">) => {
-		// I will need to use a server action to add the job to the database
-	};
-
-	const updateJob = (updatedJob: Application) => {
-		// I will need to use a server action to update the job in the database
-		console.log(updatedJob);
-		setApps(apps.map((job) => (job.id === updatedJob.id ? updatedJob : job)));
-	};
 
 	const handleEditJob = (job: Application) => {
 		// opens up the edit modal
@@ -131,7 +122,7 @@ export default function JobTracker({
 										columnJobs.map((job) => (
 											<JobCard
 												key={job.id}
-												job={job}
+												app={job}
 												onDelete={handleDeleteJob}
 												onEdit={handleEditJob}
 											/>
@@ -145,15 +136,16 @@ export default function JobTracker({
 				<DragOverlay>
 					{activeId ? (
 						<JobCard
-							job={
-								apps.find((job) => job.id === activeId) || {
+							app={
+								apps.find((job) => job.id === activeId) ||
+								({
 									id: "",
 									company: "",
 									position: "",
 									date: "",
 									notes: "",
 									status: "",
-								}
+								} as Application)
 							}
 							onDelete={() => {}}
 							onEdit={() => {}}

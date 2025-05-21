@@ -11,16 +11,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { AddJobForm } from "@/components/add-job-form";
-import type { Job } from "@/lib/types";
+import type { Application } from "@/lib/types";
 
 interface AddJobModalProps {
-	onAddJob: (job: Omit<Job, "id">) => void;
+	onAddJob: (job: Application) => void;
 }
 
 export function AddJobModal({ onAddJob }: AddJobModalProps) {
 	const [open, setOpen] = useState(false);
 
-	const handleSubmit = (job: Omit<Job, "id">) => {
+	const handleSubmit = (job: Application) => {
 		onAddJob(job);
 		setOpen(false);
 	};
@@ -34,12 +34,12 @@ export function AddJobModal({ onAddJob }: AddJobModalProps) {
 			<DialogTrigger asChild>
 				<Button className="flex items-center gap-2 cursor-pointer">
 					<PlusIcon className="h-4 w-4" />
-					Add Job
+					Add Application
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[600px]">
 				<DialogHeader>
-					<DialogTitle>Add New Job Application</DialogTitle>
+					<DialogTitle>Add New Application</DialogTitle>
 				</DialogHeader>
 				<AddJobForm onSubmit={handleSubmit} onCancel={handleCancel} />
 			</DialogContent>
