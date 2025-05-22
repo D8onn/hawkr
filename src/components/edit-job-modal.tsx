@@ -4,21 +4,21 @@ import { AddJobForm } from "@/components/add-job-form";
 import type { Application } from "@/lib/types";
 
 interface EditJobModalProps {
-	job: Application | null;
+	app: Application | null;
 	isOpen: boolean;
 	onClose: () => void;
 	onUpdate: (updatedJob: Application) => void;
 }
 
-export function EditJobModal({ job, isOpen, onClose, onUpdate }: EditJobModalProps) {
+export function EditJobModal({ app, isOpen, onClose, onUpdate }: EditJobModalProps) {
 	const handleSubmit = (updatedJob: Application) => {
-		if (job) {
+		if (app) {
 			onUpdate(updatedJob);
 		}
 		onClose();
 	};
 
-	if (!job) return null;
+	if (!app) return null;
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -27,7 +27,7 @@ export function EditJobModal({ job, isOpen, onClose, onUpdate }: EditJobModalPro
 					<DialogTitle>Edit Application</DialogTitle>
 				</DialogHeader>
 				<AddJobForm
-					initialData={job}
+					initialData={app}
 					onSubmit={handleSubmit}
 					onCancel={onClose}
 					submitLabel="Update Application"

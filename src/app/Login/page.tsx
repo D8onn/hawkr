@@ -1,4 +1,4 @@
-import { login, signup } from "./actions";
+import { login } from "./actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
@@ -12,7 +12,7 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
 			<form className="flex-1 flex flex-col min-w-64">
 				<h1 className="text-2xl font-medium">Sign in</h1>
 				<p className="text-sm text-foreground">
-					Don't have an account?{" "}
+					{"Don't have an account? "}
 					<Link
 						className="text-foreground font-medium underline"
 						href="/sign-up"

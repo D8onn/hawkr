@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
 	DndContext,
-	type DragEndEvent,
 	closestCenter,
 	DragOverlay,
 	type DragStartEvent,
@@ -15,8 +14,7 @@ import { AddJobModal } from "@/components/add-job-modal";
 import { EditJobModal } from "@/components/edit-job-modal";
 import type { Application, Column } from "@/lib/types";
 import UserNav from "@/components/user-nav";
-import { addJob, updateJob } from "./actions";
-import { set } from "date-fns";
+import { insertApplication, updateApplication, deleteApplication } from "./actions";
 
 export default function JobTracker({
 	children,
@@ -51,20 +49,20 @@ export default function JobTracker({
 		setActiveId(null);
 	}
 
-	const handleEditJob = (job: Application) => {
+	const handleEditJob = (app: Application) => {
 		// opens up the edit modal
-		// and sets the job to be edited
-		setEditingJob(job);
+		// and sets the app to be edited
+		setEditingJob(app);
 	};
 
 	const closeEditModal = () => {
 		setEditingJob(null);
 	};
 
-	// function to delete a job
+	// function to delete a app
 	const handleDeleteJob = (id: string) => {
-		// I will need to use a server action to delete the job from the database
-		setApps(apps.filter((job) => job.id !== parseInt(id)));
+		// I will need to use a server action to delete the app from the database
+		setApps(apps.filter((app) => app.id != parseInt(id)));
 	};
 
 	return (
@@ -72,9 +70,9 @@ export default function JobTracker({
 			<UserNav signedIn dashboard>
 				{children}
 				<AddJobModal
-					onAddJob={async (job) => {
-						const newJob = await addJob(job);
-						setApps((prev) => [...prev, newJob as Application]);
+					onAddJob={async (app) => {
+						const newApp = await insertApplication(app);
+						setApps((prev) => [...prev, newApp as Application]);
 					}}
 				/>
 			</UserNav>
@@ -83,7 +81,7 @@ export default function JobTracker({
 				collisionDetection={closestCenter}
 				// the async server action to update on drag
 				onDragEnd={async (event) => {
-					const { active, over } = event;
+					const over = event.over;
 
 					if (!over) {
 						setIsChange(false);
@@ -93,15 +91,17 @@ export default function JobTracker({
 
 					const overId = over.id as string;
 
-					const currApps = apps.map((job) =>
-						job.id === activeId ? { ...job, status: overId } : job
+					const currApps = apps.map((app) =>
+						app.id === activeId ? { ...app, status: overId } : app
 					);
 
 					setApps(currApps);
 
 					// async call to update the app in the database, but don't wait for it
 					// so the UI updates immediately
-					updateJob(currApps.find((job) => job.id === activeId) as Application);
+					updateApplication(
+						currApps.find((app) => app.id === activeId) as Application
+					);
 
 					setIsChange(false);
 					setActiveId(null);
@@ -111,7 +111,7 @@ export default function JobTracker({
 			>
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 					{columns.map((column) => {
-						const columnJobs = apps.filter((job) => job.status === column.id);
+						const columnJobs = apps.filter((app) => app.status === column.id);
 
 						return (
 							<SortableContext
@@ -125,11 +125,20 @@ export default function JobTracker({
 									count={columnJobs.length}
 								>
 									{!isChange &&
-										columnJobs.map((job) => (
+										columnJobs.map((app) => (
 											<JobCard
-												key={job.id}
-												app={job}
-												onDelete={handleDeleteJob}
+												key={app.id}
+												app={app}
+												onDelete={async (id) => {
+													// I will need to use a server action to delete the app in the database
+													const currApp = apps.find(
+														(app) => app.id == parseInt(id)
+													);
+													deleteApplication(
+														currApp as Application
+													);
+													handleDeleteJob(id);
+												}}
 												onEdit={handleEditJob}
 											/>
 										))}
@@ -142,7 +151,7 @@ export default function JobTracker({
 				<DragOverlay>
 					{activeId ? (
 						<JobCard
-							app={apps.find((job) => job.id === activeId) as Application}
+							app={apps.find((app) => app.id === activeId) as Application}
 							onDelete={() => {}}
 							onEdit={() => {}}
 							isDragging
@@ -151,16 +160,16 @@ export default function JobTracker({
 				</DragOverlay>
 			</DndContext>
 			<EditJobModal
-				job={editingJob}
+				app={editingJob}
 				isOpen={!!editingJob}
 				onClose={closeEditModal}
 				onUpdate={async (updatedJob) => {
-					// I will need to use a server action to update the job in the database
+					// I will need to use a server action to update the app in the database
 					setApps((prev) =>
-						prev.map((job) => (job.id === updatedJob.id ? updatedJob : job))
+						prev.map((app) => (app.id === updatedJob.id ? updatedJob : app))
 					);
 
-					updateJob(updatedJob);
+					updateApplication(updatedJob);
 				}}
 			/>
 		</div>

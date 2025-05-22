@@ -74,7 +74,7 @@ export function AddJobForm({
 
 	return (
 		<form
-			action={async (e) => {
+			action={async () => {
 				await onSubmit(formData);
 				ref.current?.reset();
 			}}
