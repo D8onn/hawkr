@@ -13,57 +13,26 @@ import { JobColumn } from "@/components/job-column";
 import { JobCard } from "@/components/job-card";
 import { AddJobModal } from "@/components/add-job-modal";
 import { EditJobModal } from "@/components/edit-job-modal";
-import type { Job, Column } from "@/lib/types";
+import type { Application, Column } from "@/lib/types";
 import UserNav from "@/components/user-nav";
+import { addJob, updateJob } from "./actions";
+import { set } from "date-fns";
 
-export default function JobTracker({ children }: { children?: React.ReactNode }) {
-	const [jobs, setJobs] = useState<Job[]>([
-		{
-			id: "1",
-			company: "Tech Solutions Inc.",
-			position: "Frontend Developer",
-			date: "2023-03-01",
-			notes: "Applied via company website",
-			status: "no-response",
-		},
-		{
-			id: "2",
-			company: "Digital Innovations",
-			position: "UX Designer",
-			date: "2023-03-05",
-			notes: "Referred by John",
-			status: "interview",
-		},
-		{
-			id: "3",
-			company: "Global Systems",
-			position: "Full Stack Developer",
-			date: "2023-02-20",
-			notes: "Phone screen scheduled",
-			status: "interview",
-		},
-		{
-			id: "4",
-			company: "Creative Labs",
-			position: "Product Manager",
-			date: "2023-02-15",
-			notes: "Rejected after final round",
-			status: "denied",
-		},
-		{
-			id: "5",
-			company: "Future Tech",
-			position: "Software Engineer",
-			date: "2023-03-10",
-			notes: "Offer received, negotiating salary",
-			status: "offered",
-		},
-	]);
-
-	const [activeId, setActiveId] = useState<string | null>(null);
+export default function JobTracker({
+	children,
+	applications,
+}: {
+	children?: React.ReactNode;
+	applications: Application[] | null;
+}) {
+	// applications are passed from the server
+	// and are used to populate the initial state
+	const [apps, setApps] = useState<Application[]>(applications || []);
+	const [activeId, setActiveId] = useState<number | null>(null);
 	const [isChange, setIsChange] = useState<boolean | null>(false);
-	const [editingJob, setEditingJob] = useState<Job | null>(null);
+	const [editingJob, setEditingJob] = useState<Application | null>(null);
 
+	// Define the columns for the application statuses and their titles
 	const columns: Column[] = [
 		{ id: "no-response", title: "No Response" },
 		{ id: "denied", title: "Denied" },
@@ -73,31 +42,8 @@ export default function JobTracker({ children }: { children?: React.ReactNode })
 
 	function handleDragStart(event: DragStartEvent) {
 		setIsChange(true);
-		setActiveId(event.active.id as string);
-	}
-
-	function handleDragEnd(event: DragEndEvent) {
-		const { active, over } = event;
-
-		if (!over) {
-			setIsChange(false);
-			setActiveId(null);
-			return;
-		}
-
-		const overId = over.id as string;
-
-		// If dropping on a column
-		const targetColumn = columns.find((col) => col.id === overId);
-		if (targetColumn) {
-			setJobs(
-				jobs.map((job) =>
-					job.id === activeId ? { ...job, status: targetColumn.id } : job
-				)
-			);
-		}
-		setIsChange(false);
-		setActiveId(null);
+		setActiveId(event.active.id as number);
+		console.log("drag start", event.active.id);
 	}
 
 	function handleDragCancel() {
@@ -105,17 +51,9 @@ export default function JobTracker({ children }: { children?: React.ReactNode })
 		setActiveId(null);
 	}
 
-	const addJob = (newJob: Omit<Job, "id">) => {
-		const id = Math.random().toString(36).substring(2, 9);
-		setJobs([...jobs, { ...newJob, id }]);
-	};
-
-	const updateJob = (updatedJob: Job) => {
-		console.log(updatedJob);
-		setJobs(jobs.map((job) => (job.id === updatedJob.id ? updatedJob : job)));
-	};
-
-	const handleEditJob = (job: Job) => {
+	const handleEditJob = (job: Application) => {
+		// opens up the edit modal
+		// and sets the job to be edited
 		setEditingJob(job);
 	};
 
@@ -123,26 +61,57 @@ export default function JobTracker({ children }: { children?: React.ReactNode })
 		setEditingJob(null);
 	};
 
+	// function to delete a job
 	const handleDeleteJob = (id: string) => {
-		setJobs(jobs.filter((job) => job.id !== id));
+		// I will need to use a server action to delete the job from the database
+		setApps(apps.filter((job) => job.id !== parseInt(id)));
 	};
 
 	return (
 		<div className="container mx-auto p-4">
-			<UserNav signedIn>
+			<UserNav signedIn dashboard>
 				{children}
-				<AddJobModal onAddJob={addJob} />
+				<AddJobModal
+					onAddJob={async (job) => {
+						const newJob = await addJob(job);
+						setApps((prev) => [...prev, newJob as Application]);
+					}}
+				/>
 			</UserNav>
 
 			<DndContext
 				collisionDetection={closestCenter}
-				onDragEnd={handleDragEnd}
+				// the async server action to update on drag
+				onDragEnd={async (event) => {
+					const { active, over } = event;
+
+					if (!over) {
+						setIsChange(false);
+						setActiveId(null);
+						return;
+					}
+
+					const overId = over.id as string;
+
+					const currApps = apps.map((job) =>
+						job.id === activeId ? { ...job, status: overId } : job
+					);
+
+					setApps(currApps);
+
+					// async call to update the app in the database, but don't wait for it
+					// so the UI updates immediately
+					updateJob(currApps.find((job) => job.id === activeId) as Application);
+
+					setIsChange(false);
+					setActiveId(null);
+				}}
 				onDragStart={handleDragStart}
 				onDragCancel={handleDragCancel}
 			>
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 					{columns.map((column) => {
-						const columnJobs = jobs.filter((job) => job.status === column.id);
+						const columnJobs = apps.filter((job) => job.status === column.id);
 
 						return (
 							<SortableContext
@@ -159,7 +128,7 @@ export default function JobTracker({ children }: { children?: React.ReactNode })
 										columnJobs.map((job) => (
 											<JobCard
 												key={job.id}
-												job={job}
+												app={job}
 												onDelete={handleDeleteJob}
 												onEdit={handleEditJob}
 											/>
@@ -173,16 +142,7 @@ export default function JobTracker({ children }: { children?: React.ReactNode })
 				<DragOverlay>
 					{activeId ? (
 						<JobCard
-							job={
-								jobs.find((job) => job.id === activeId) || {
-									id: "",
-									company: "",
-									position: "",
-									date: "",
-									notes: "",
-									status: "",
-								}
-							}
+							app={apps.find((job) => job.id === activeId) as Application}
 							onDelete={() => {}}
 							onEdit={() => {}}
 							isDragging
@@ -194,7 +154,14 @@ export default function JobTracker({ children }: { children?: React.ReactNode })
 				job={editingJob}
 				isOpen={!!editingJob}
 				onClose={closeEditModal}
-				onUpdate={updateJob}
+				onUpdate={async (updatedJob) => {
+					// I will need to use a server action to update the job in the database
+					setApps((prev) =>
+						prev.map((job) => (job.id === updatedJob.id ? updatedJob : job))
+					);
+
+					updateJob(updatedJob);
+				}}
 			/>
 		</div>
 	);

@@ -17,7 +17,7 @@ export function JobColumn({ id, title, count, children }: JobColumnProps) {
 	return (
 		<div
 			ref={setNodeRef}
-			className={`flex h-full min-h-[500px] flex-col rounded-lg border bg-card p-4 transition-colors ${
+			className={`flex h-full min-h-[500px] flex-col rounded-lg  border-2 bg-card p-4 transition-colors ${
 				isOver ? "ring-2 ring-primary bg-primary/10" : ""
 			}`}
 		>

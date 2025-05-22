@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +14,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { Job } from "@/lib/types";
-import { init } from "next/dist/compiled/webpack/webpack";
+import type { Application } from "@/lib/types";
 
 interface AddJobFormProps {
-	onSubmit: (job: Omit<Job, "id">) => void;
+	onSubmit: (job: Application) => void;
 	onCancel: () => void;
-	initialData?: Job;
+	initialData?: Application;
 	submitLabel?: string;
 }
 
@@ -28,25 +27,36 @@ export function AddJobForm({
 	onSubmit,
 	onCancel,
 	initialData,
-	submitLabel = "Add Job",
+	submitLabel = "Add Application",
 }: AddJobFormProps) {
-	const [formData, setFormData] = useState<Omit<Job, "id">>({
+	const [formData, setFormData] = useState<Application>({
+		id: 0,
+		user_id: "",
 		company: "",
 		position: "",
 		date: new Date().toISOString().split("T")[0],
 		notes: "",
 		status: "no-response",
+		job_email: "",
+		job_link: "",
+		job_password: "",
 	});
+	const ref = useRef<HTMLFormElement>(null);
 
 	// If initialData is provided, use it to populate the form
 	useEffect(() => {
 		if (initialData) {
 			setFormData({
+				id: initialData.id,
 				company: initialData.company,
 				position: initialData.position,
 				date: initialData.date,
 				notes: initialData.notes,
 				status: initialData.status,
+				job_email: initialData.job_email,
+				job_link: initialData.job_link,
+				job_password: initialData.job_password,
+				user_id: initialData.user_id,
 			});
 		}
 	}, [initialData]);
@@ -62,13 +72,14 @@ export function AddJobForm({
 		setFormData((prev) => ({ ...prev, status: value }));
 	};
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		onSubmit(formData);
-	};
-
 	return (
-		<form onSubmit={handleSubmit}>
+		<form
+			action={async (e) => {
+				await onSubmit(formData);
+				ref.current?.reset();
+			}}
+			ref={ref}
+		>
 			<CardContent className="space-y-4">
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div className="space-y-2">
@@ -99,14 +110,18 @@ export function AddJobForm({
 							id="date"
 							name="date"
 							type="date"
-							value={formData.date}
+							value={formData.date as string}
 							onChange={handleChange}
 							required
 						/>
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="status">Status</Label>
-						<Select onValueChange={handleSelectChange}>
+						<Select
+							onValueChange={handleSelectChange}
+							defaultValue={initialData?.status}
+							required
+						>
 							<SelectTrigger id="status">
 								<SelectValue placeholder="Select status" />
 							</SelectTrigger>
@@ -124,7 +139,7 @@ export function AddJobForm({
 					<Textarea
 						id="notes"
 						name="notes"
-						value={formData.notes}
+						value={formData.notes as string}
 						onChange={handleChange}
 						rows={3}
 					/>
@@ -134,7 +149,9 @@ export function AddJobForm({
 				<Button type="button" variant="outline" onClick={onCancel}>
 					Cancel
 				</Button>
-				<Button type="submit">{submitLabel}</Button>
+				<Button type="submit" className="cursor-pointer">
+					{submitLabel}
+				</Button>
 			</CardFooter>
 		</form>
 	);
