@@ -16,6 +16,7 @@ import { EditJobModal } from "@/components/edit-job-modal";
 import type { Application, Column } from "@/lib/types";
 import UserNav from "@/components/user-nav";
 import { addJob, updateJob } from "./actions";
+import { set } from "date-fns";
 
 export default function JobTracker({
 	children,
@@ -42,31 +43,7 @@ export default function JobTracker({
 	function handleDragStart(event: DragStartEvent) {
 		setIsChange(true);
 		setActiveId(event.active.id as number);
-	}
-
-	function handleDragEnd(event: DragEndEvent) {
-		const { active, over } = event;
-
-		if (!over) {
-			setIsChange(false);
-			setActiveId(null);
-			return;
-		}
-
-		const overId = over.id as string;
-
-		// If dropping on a column
-		const targetColumn = columns.find((col) => col.id === overId);
-		if (targetColumn) {
-			// will need to use a server action to update the job in the database
-			setApps(
-				apps.map((job) =>
-					job.id === activeId ? { ...job, status: targetColumn.id } : job
-				)
-			);
-		}
-		setIsChange(false);
-		setActiveId(null);
+		console.log("drag start", event.active.id);
 	}
 
 	function handleDragCancel() {
@@ -92,14 +69,43 @@ export default function JobTracker({
 
 	return (
 		<div className="container mx-auto p-4">
-			<UserNav signedIn>
+			<UserNav signedIn dashboard>
 				{children}
-				<AddJobModal onAddJob={addJob} />
+				<AddJobModal
+					onAddJob={async (job) => {
+						const newJob = await addJob(job);
+						setApps((prev) => [...prev, newJob as Application]);
+					}}
+				/>
 			</UserNav>
 
 			<DndContext
 				collisionDetection={closestCenter}
-				onDragEnd={handleDragEnd}
+				// the async server action to update on drag
+				onDragEnd={async (event) => {
+					const { active, over } = event;
+
+					if (!over) {
+						setIsChange(false);
+						setActiveId(null);
+						return;
+					}
+
+					const overId = over.id as string;
+
+					const currApps = apps.map((job) =>
+						job.id === activeId ? { ...job, status: overId } : job
+					);
+
+					setApps(currApps);
+
+					// async call to update the app in the database, but don't wait for it
+					// so the UI updates immediately
+					updateJob(currApps.find((job) => job.id === activeId) as Application);
+
+					setIsChange(false);
+					setActiveId(null);
+				}}
 				onDragStart={handleDragStart}
 				onDragCancel={handleDragCancel}
 			>
@@ -136,17 +142,7 @@ export default function JobTracker({
 				<DragOverlay>
 					{activeId ? (
 						<JobCard
-							app={
-								apps.find((job) => job.id === activeId) ||
-								({
-									id: "",
-									company: "",
-									position: "",
-									date: "",
-									notes: "",
-									status: "",
-								} as Application)
-							}
+							app={apps.find((job) => job.id === activeId) as Application}
 							onDelete={() => {}}
 							onEdit={() => {}}
 							isDragging
@@ -158,7 +154,14 @@ export default function JobTracker({
 				job={editingJob}
 				isOpen={!!editingJob}
 				onClose={closeEditModal}
-				onUpdate={updateJob}
+				onUpdate={async (updatedJob) => {
+					// I will need to use a server action to update the job in the database
+					setApps((prev) =>
+						prev.map((job) => (job.id === updatedJob.id ? updatedJob : job))
+					);
+
+					updateJob(updatedJob);
+				}}
 			/>
 		</div>
 	);

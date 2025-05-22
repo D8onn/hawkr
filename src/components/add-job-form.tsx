@@ -149,7 +149,9 @@ export function AddJobForm({
 				<Button type="button" variant="outline" onClick={onCancel}>
 					Cancel
 				</Button>
-				<Button type="submit">{submitLabel}</Button>
+				<Button type="submit" className="cursor-pointer">
+					{submitLabel}
+				</Button>
 			</CardFooter>
 		</form>
 	);

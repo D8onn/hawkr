@@ -5,6 +5,7 @@ import { applications } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getUser } from "@/db/utils";
+import { redirect } from "next/navigation";
 
 // will be the server actions for handling the insert/update/delete of the applications
 async function insertApplication(app: Application) {
@@ -31,7 +32,8 @@ async function insertApplication(app: Application) {
 				notes: app.notes,
 			})
 			.returning();
-		return data;
+		console.log("data", data[0]);
+		return data[0];
 	} catch (error) {
 		console.error("Validation error:", error);
 	}
@@ -39,8 +41,7 @@ async function insertApplication(app: Application) {
 
 export async function addJob(app: Application) {
 	// I will need to use a server action to insert the job into the database
-	await insertApplication(app);
-	revalidatePath("/dashboard");
+	return await insertApplication(app);
 }
 
 // will be the server actions for handling the insert/update/delete of the applications
@@ -83,5 +84,5 @@ async function updateApplication(app: Application) {
 export async function updateJob(app: Application) {
 	// I will need to use a server action to update the job in the database
 	await updateApplication(app);
-	revalidatePath("/dashboard");
+	// redirect("/dashboard");
 }

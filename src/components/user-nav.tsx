@@ -6,9 +6,11 @@ import { Button } from "./ui/button";
 export default function UserNav({
 	children,
 	signedIn = false,
+	dashboard = false,
 }: {
 	children?: React.ReactNode;
 	signedIn?: boolean;
+	dashboard?: boolean;
 }) {
 	return (
 		<div className="mb-8 flex items-center justify-between flex-wrap gap-4">
@@ -24,13 +26,14 @@ export default function UserNav({
 
 			<div className="flex items-center gap-4 flex-wrap">
 				{children}
-				{signedIn && (
+				{signedIn && !dashboard && (
 					<div className="flex">
 						<Button asChild size="default" variant={"outline"}>
 							<Link href="/dashboard">Dashboard</Link>
 						</Button>
 					</div>
 				)}
+
 				{!signedIn && (
 					<div className="flex gap-4">
 						<Button asChild size="sm" variant={"outline"}>
