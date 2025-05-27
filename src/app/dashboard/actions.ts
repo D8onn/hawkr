@@ -28,6 +28,9 @@ export async function insertApplication(app: Application) {
 				status: app.status as "no-response" | "interview" | "denied" | "offered",
 				date: app.date,
 				notes: app.notes,
+				application_email: app.application_email,
+				application_link: app.application_link,
+				application_password: app.application_password,
 			})
 			.returning();
 		return data[0];
@@ -63,6 +66,9 @@ export async function updateApplication(app: Application) {
 				status: app.status as "no-response" | "interview" | "denied" | "offered",
 				date: app.date,
 				notes: app.notes,
+				application_email: app.application_email,
+				application_link: app.application_link,
+				application_password: app.application_password,
 			})
 			.where(
 				and(

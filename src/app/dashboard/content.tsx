@@ -41,7 +41,6 @@ export default function JobTracker({
 	function handleDragStart(event: DragStartEvent) {
 		setIsChange(true);
 		setActiveId(event.active.id as number);
-		console.log("drag start", event.active.id);
 	}
 
 	function handleDragCancel() {
