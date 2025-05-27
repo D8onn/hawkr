@@ -5,9 +5,9 @@ export interface Application {
 	date: string | null;
 	notes: string | null;
 	status: string;
-	job_email: string | null;
-	job_password: string | null;
-	job_link: string | null;
+	application_email: string;
+	application_password: string;
+	application_link: string;
 	user_id: string;
 }
 

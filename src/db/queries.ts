@@ -1,4 +1,4 @@
-import { users, applications } from "@/db/schema";
+import {  applications } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { User } from "@supabase/auth-js";
 import { Application } from "@/lib/types";

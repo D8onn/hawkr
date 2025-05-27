@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
+import { EyeIcon, EyeOffIcon, CopyIcon } from "lucide-react";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { Application } from "@/lib/types";
+import { toast } from "sonner";
 
 interface AddJobFormProps {
 	onSubmit: (job: Application) => void;
@@ -29,6 +31,7 @@ export function AddJobForm({
 	initialData,
 	submitLabel = "Add Application",
 }: AddJobFormProps) {
+	const [showPassword, setShowPassword] = useState(false);
 	const [formData, setFormData] = useState<Application>({
 		id: 0,
 		user_id: "",
@@ -37,9 +40,9 @@ export function AddJobForm({
 		date: new Date().toISOString().split("T")[0],
 		notes: "",
 		status: "no-response",
-		job_email: "",
-		job_link: "",
-		job_password: "",
+		application_email: "",
+		application_link: "",
+		application_password: "",
 	});
 	const ref = useRef<HTMLFormElement>(null);
 
@@ -53,9 +56,9 @@ export function AddJobForm({
 				date: initialData.date,
 				notes: initialData.notes,
 				status: initialData.status,
-				job_email: initialData.job_email,
-				job_link: initialData.job_link,
-				job_password: initialData.job_password,
+				application_email: initialData.application_email,
+				application_link: initialData.application_link,
+				application_password: initialData.application_password,
 				user_id: initialData.user_id,
 			});
 		}
@@ -72,9 +75,24 @@ export function AddJobForm({
 		setFormData((prev) => ({ ...prev, status: value }));
 	};
 
+	const handleCopyPassword = async () => {
+		if (formData.application_password) {
+			try {
+				await navigator.clipboard.writeText(formData.application_password);
+				toast("Copied", {
+					description: "Password has been copied to clipboard",
+				});
+			} catch (err) {
+				toast("Error", {
+					description: "Could not copy password to clipboard",
+				});
+			}
+		}
+	};
+
 	return (
 		<form
-			action={async (e) => {
+			action={async () => {
 				await onSubmit(formData);
 				ref.current?.reset();
 			}}
@@ -133,6 +151,68 @@ export function AddJobForm({
 							</SelectContent>
 						</Select>
 					</div>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="application_email">Application Email</Label>
+					<Input
+						id="application_email"
+						name="application_email"
+						type="email"
+						value={formData.application_email}
+						onChange={handleChange}
+						placeholder="Email used for this application"
+					/>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="application_password">Application Password</Label>
+					<div className="relative">
+						<Input
+							id="application_password"
+							name="application_password"
+							type={showPassword ? "text" : "password"}
+							value={formData.application_password}
+							onChange={handleChange}
+							placeholder="Password for application portal"
+							className="pr-20"
+						/>
+						<div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-2">
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setShowPassword(!showPassword)}
+							>
+								{showPassword ? (
+									<EyeOffIcon className="h-4 w-4" />
+								) : (
+									<EyeIcon className="h-4 w-4" />
+								)}
+							</Button>
+							{formData.application_password && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8"
+									onClick={handleCopyPassword}
+								>
+									<CopyIcon className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+					</div>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="application_link">Application Link</Label>
+					<Input
+						id="application_link"
+						name="application_link"
+						type="url"
+						value={formData.application_link}
+						onChange={handleChange}
+						placeholder="https://company.com/careers/job-id"
+					/>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="notes">Notes</Label>

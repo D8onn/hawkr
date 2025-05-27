@@ -16,7 +16,7 @@ export const applications = pgTable("Jobs", {
 	date: date("date"),
 	notes: text("notes"),
 	status: Status("status").default("no-response").notNull(),
-	job_email: text("job_email"),
-	job_password: text("job_password"),
-	job_link: text("job_link"),
+	application_email: text("job_email").notNull(),
+	application_password: text("job_password").notNull(),
+	application_link: text("job_link").notNull(),
 });

@@ -1,7 +1,6 @@
 "use server";
 import UserNav from "@/components/user-nav";
 import { createClient } from "@/utils/supabase/server";
-import { getAllApplications } from "@/db/queries";
 
 export default async function Home() {
 	const supabase = await createClient();
