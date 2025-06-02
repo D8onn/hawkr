@@ -103,11 +103,13 @@ export function JobCard({ app, onDelete, onEdit, isDragging = false }: JobCardPr
 		<Card
 			ref={setNodeRef}
 			style={style}
-			className={`relative ${
-				isDragging
-					? "shadow-lg ring-2 ring-primary bg-background/75"
-					: "cursor-pointer"
-			}`}
+			className={
+				`relative ${
+					isDragging
+						? "shadow-lg ring-2 ring-primary bg-background/75"
+						: "cursor-pointer"
+				}` + " hover:bg-accent transition-colors duration-200 ease-in-out"
+			}
 			onClick={handleCardClick}
 		>
 			<div

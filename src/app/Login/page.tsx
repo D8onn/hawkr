@@ -4,12 +4,14 @@ import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
 import Link from "next/link";
 import { FormMessage, Message } from "@/components/form-message";
+import UserNav from "@/components/user-nav";
 
 export default async function Login(props: { searchParams: Promise<Message> }) {
 	const searchParams = await props.searchParams;
 	return (
-		<div className="flex flex-col gap-20 max-w-5xl p-5">
-			<form className="flex-1 flex flex-col min-w-64">
+		<div className="flex flex-col mx-auto gap-20 max-w-[95lvw] p-4">
+			<UserNav signedIn={false} />
+			<form className="flex-1 flex flex-col min-w-64 px-4">
 				<h1 className="text-2xl font-medium">Sign in</h1>
 				<p className="text-sm text-foreground">
 					{"Don't have an account? "}
