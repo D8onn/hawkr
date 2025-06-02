@@ -1,7 +1,7 @@
 "use client";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function UserNav({
 	children,
@@ -29,7 +29,7 @@ export default function UserNav({
 				{signedIn && !dashboard && (
 					<div className="flex">
 						<Button asChild size="default" variant={"outline"}>
-							<Link href="/dashboard">Dashboard</Link>
+							<Link href="/Dashboard">Dashboard</Link>
 						</Button>
 					</div>
 				)}
@@ -37,7 +37,7 @@ export default function UserNav({
 				{!signedIn && (
 					<div className="flex gap-4">
 						<Button asChild size="sm" variant={"outline"}>
-							<Link href="/login">Sign in</Link>
+							<Link href="/Login">Sign in</Link>
 						</Button>
 						<Button asChild size="sm" variant={"default"}>
 							<Link href="/sign-up">Sign up</Link>

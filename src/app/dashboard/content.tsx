@@ -16,7 +16,11 @@ import { SearchFilter } from "@/components/search-filter";
 import type { Application, Column } from "@/lib/types";
 
 import UserNav from "@/components/user-nav";
-import { insertApplication, updateApplication, deleteApplication } from "./actions";
+import {
+	insertApplication,
+	updateApplication,
+	deleteApplication,
+} from "@/app/Dashboard/actions";
 
 export default function JobTracker({
 	children,

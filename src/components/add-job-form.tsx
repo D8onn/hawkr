@@ -83,9 +83,12 @@ export function AddJobForm({
 					description: "Password has been copied to clipboard",
 				});
 			} catch (err) {
+
 				toast("Error", {
 					description: "Could not copy password to clipboard",
 				});
+				console.error("Failed to copy password:", err);
+				
 			}
 		}
 	};
