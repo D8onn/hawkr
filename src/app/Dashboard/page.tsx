@@ -14,7 +14,7 @@ export default async function Dashboard() {
 	} = await supabase.auth.getUser();
 
 	if (error || !user) {
-		redirect("/login");
+		redirect("/Login");
 	}
 	// get all the users Applications from the database
 	const allApplications = await getAllApplications(user);

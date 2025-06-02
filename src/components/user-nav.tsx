@@ -40,7 +40,7 @@ export default function UserNav({
 							<Link href="/Login">Sign in</Link>
 						</Button>
 						<Button asChild size="sm" variant={"default"}>
-							<Link href="/sign-up">Sign up</Link>
+							<Link href="/SignUp">Sign up</Link>
 						</Button>
 					</div>
 				)}
