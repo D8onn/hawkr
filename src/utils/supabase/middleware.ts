@@ -44,9 +44,9 @@ export const updateSession = async (request: NextRequest) => {
 			return NextResponse.redirect(new URL("/login", request.url));
 		}
 
-		if (request.nextUrl.pathname === "/" && !user.error) {
-			return NextResponse.redirect(new URL("/dashboard", request.url));
-		}
+		// if (request.nextUrl.pathname === "/" && !user.error) {
+		// 	return NextResponse.redirect(new URL("/dashboard", request.url));
+		// }
 
 		return response;
 	} catch (error) {
@@ -59,6 +59,5 @@ export const updateSession = async (request: NextRequest) => {
 				headers: request.headers,
 			},
 		});
-		
 	}
 };
