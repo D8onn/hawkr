@@ -10,7 +10,7 @@ export default async function Home() {
 	} = await supabase.auth.getUser();
 
 	return (
-		<div className="container mx-auto p-4">
+		<div className="container mx-auto max-w-[95lvw] p-4">
 			<UserNav signedIn={!!user}></UserNav>
 			<div className="flex flex-col items-center text-center justify-center h-screen">
 				<h1 className="text-4xl font-bold mb-4">Welcome to Hawkr</h1>

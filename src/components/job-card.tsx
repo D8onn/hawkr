@@ -40,7 +40,7 @@ export function JobCard({ app, onDelete, onEdit, isDragging = false }: JobCardPr
 	};
 
 	const timezone = new Date().toString().match(/-([0-9]+)/) || ["0000"];
-	var offset = timezone[1];
+	let offset = timezone[1];
 	offset = "T" + offset.slice(0, 2) + ":" + offset.slice(2, 4);
 
 	const formattedDate = app.date
@@ -74,6 +74,7 @@ export function JobCard({ app, onDelete, onEdit, isDragging = false }: JobCardPr
 				toast("Copied", {
 					description: "Could not copy password to clipboard",
 				});
+				console.error("Failed to copy password:", err);
 			}
 		}
 	};
@@ -90,6 +91,7 @@ export function JobCard({ app, onDelete, onEdit, isDragging = false }: JobCardPr
 				toast("Copied", {
 					description: "Could not copy email to clipboard",
 				});
+				console.error("Failed to copy email:", err);
 			}
 		}
 	};
@@ -103,11 +105,13 @@ export function JobCard({ app, onDelete, onEdit, isDragging = false }: JobCardPr
 		<Card
 			ref={setNodeRef}
 			style={style}
-			className={`relative ${
-				isDragging
-					? "shadow-lg ring-2 ring-primary bg-background/75"
-					: "cursor-pointer"
-			}`}
+			className={
+				`relative ${
+					isDragging
+						? "shadow-lg ring-2 ring-primary bg-background/75"
+						: "cursor-pointer"
+				}` + " hover:bg-accent transition-colors duration-200 ease-in-out"
+			}
 			onClick={handleCardClick}
 		>
 			<div

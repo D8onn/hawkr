@@ -17,7 +17,7 @@ export default function UserNav({
 			<div className="flex items-center gap-4">
 				<Link
 					href="/"
-					className="text-3xl font-bold text-center px-4 py-2 cursor-pointer"
+					className="text-3xl font-bold text-center py-2 cursor-pointer"
 				>
 					Hawkr
 				</Link>

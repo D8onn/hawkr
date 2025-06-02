@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
 	DndContext,
 	closestCenter,
@@ -12,7 +12,9 @@ import { JobColumn } from "@/components/job-column";
 import { JobCard } from "@/components/job-card";
 import { AddJobModal } from "@/components/add-job-modal";
 import { EditJobModal } from "@/components/edit-job-modal";
+import { SearchFilter } from "@/components/search-filter";
 import type { Application, Column } from "@/lib/types";
+
 import UserNav from "@/components/user-nav";
 import { insertApplication, updateApplication, deleteApplication } from "./actions";
 
@@ -29,6 +31,7 @@ export default function JobTracker({
 	const [activeId, setActiveId] = useState<number | null>(null);
 	const [isChange, setIsChange] = useState<boolean | null>(false);
 	const [editingJob, setEditingJob] = useState<Application | null>(null);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	// Define the columns for the application statuses and their titles
 	const columns: Column[] = [
@@ -64,17 +67,34 @@ export default function JobTracker({
 		setApps(apps.filter((app) => app.id != parseInt(id)));
 	};
 
+	const handleSearch = (query: string) => {
+		setSearchQuery(query);
+	};
+	// Filter jobs based on search query
+	const filteredApps = useMemo(() => {
+		if (!searchQuery) return apps;
+
+		return apps.filter((app) =>
+			app.company.toLowerCase().includes(searchQuery.toLowerCase())
+		);
+	}, [apps, searchQuery]);
+
 	return (
-		<div className="container mx-auto p-4">
+		<div className="container mx-auto max-w-[95lvw] p-4">
 			<UserNav signedIn dashboard>
 				{children}
+			</UserNav>
+			<div className="my-4 grid grid-cols-3 gap-4">
+				<div className="col-span-2">
+					<SearchFilter onSearch={handleSearch} />
+				</div>
 				<AddJobModal
 					onAddJob={async (app) => {
 						const newApp = await insertApplication(app);
 						setApps((prev) => [...prev, newApp as Application]);
 					}}
 				/>
-			</UserNav>
+			</div>
 
 			<DndContext
 				collisionDetection={closestCenter}
@@ -110,7 +130,9 @@ export default function JobTracker({
 			>
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 					{columns.map((column) => {
-						const columnJobs = apps.filter((app) => app.status === column.id);
+						const columnJobs = filteredApps.filter(
+							(app) => app.status === column.id
+						);
 
 						return (
 							<SortableContext
