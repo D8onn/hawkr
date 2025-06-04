@@ -2,6 +2,8 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import LoadingScreen from "./loading-screen";
+import { useState } from "react";
 
 export default function UserNav({
 	children,
@@ -12,8 +14,11 @@ export default function UserNav({
 	signedIn?: boolean;
 	dashboard?: boolean;
 }) {
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	return (
 		<div className="mb-8 flex items-center justify-between flex-wrap gap-4">
+			{/* Loading Screen */}
+			{isLoading && <LoadingScreen />}
 			<div className="flex items-center gap-4">
 				<Link
 					href="/"
@@ -28,7 +33,12 @@ export default function UserNav({
 				{children}
 				{signedIn && !dashboard && (
 					<div className="flex">
-						<Button asChild size="default" variant={"outline"}>
+						<Button
+							asChild
+							size="default"
+							variant={"outline"}
+							onClick={() => setIsLoading(true)}
+						>
 							<Link href="/Dashboard">Dashboard</Link>
 						</Button>
 					</div>
@@ -45,11 +55,17 @@ export default function UserNav({
 					</div>
 				)}
 				{signedIn && (
-					<div className="flex">
-						<Button asChild size="default" variant={"outline"}>
-							<Link href="/signout">Sign Out</Link>
+					<form className="flex" action="/auth/signout" method="post">
+						<Button
+							className="cursor-pointer"
+							size="default"
+							type="submit"
+							onClick={() => setIsLoading(true)}
+							variant={"outline"}
+						>
+							Sign Out
 						</Button>
-					</div>
+					</form>
 				)}
 			</div>
 		</div>
