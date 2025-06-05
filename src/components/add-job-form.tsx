@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import type { Application } from "@/lib/types";
 import { toast } from "sonner";
+import LoadingScreen from "./loading-screen";
 
 interface AddJobFormProps {
 	onSubmit: (job: Application) => void;
@@ -44,6 +45,7 @@ export function AddJobForm({
 		application_link: "",
 		application_password: "",
 	});
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const ref = useRef<HTMLFormElement>(null);
 
 	// If initialData is provided, use it to populate the form
@@ -83,12 +85,10 @@ export function AddJobForm({
 					description: "Password has been copied to clipboard",
 				});
 			} catch (err) {
-
 				toast("Error", {
 					description: "Could not copy password to clipboard",
 				});
 				console.error("Failed to copy password:", err);
-				
 			}
 		}
 	};
@@ -96,12 +96,14 @@ export function AddJobForm({
 	return (
 		<form
 			action={async () => {
-				await onSubmit(formData);
-				ref.current?.reset();
+				setIsLoading(true);
+				onSubmit(formData);
+				// ref.current?.reset();
 			}}
 			ref={ref}
 		>
 			<CardContent className="space-y-4">
+				{isLoading && <LoadingScreen />}
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div className="space-y-2">
 						<Label htmlFor="company">Company</Label>
@@ -232,7 +234,11 @@ export function AddJobForm({
 				<Button type="button" variant="outline" onClick={onCancel}>
 					Cancel
 				</Button>
-				<Button type="submit" className="cursor-pointer">
+				<Button
+					type="submit"
+					onClick={() => setIsLoading(true)}
+					className="cursor-pointer"
+				>
 					{submitLabel}
 				</Button>
 			</CardFooter>
