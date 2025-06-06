@@ -95,10 +95,12 @@ export function AddJobForm({
 
 	return (
 		<form
-			action={async () => {
-				setIsLoading(true);
+			action={() => {
 				onSubmit(formData);
 				// ref.current?.reset();
+			}}
+			onSubmit={() => {
+				setIsLoading(true);
 			}}
 			ref={ref}
 		>
@@ -234,11 +236,7 @@ export function AddJobForm({
 				<Button type="button" variant="outline" onClick={onCancel}>
 					Cancel
 				</Button>
-				<Button
-					type="submit"
-					onClick={() => setIsLoading(true)}
-					className="cursor-pointer"
-				>
+				<Button type="submit" className="cursor-pointer">
 					{submitLabel}
 				</Button>
 			</CardFooter>
