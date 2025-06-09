@@ -22,7 +22,7 @@ export function EditJobModal({ app, isOpen, onClose, onUpdate }: EditJobModalPro
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="sm:max-w-[600px] top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] fixed">
+			<DialogContent className="sm:max-w-[600px]">
 				<DialogHeader>
 					<DialogTitle>Edit Application</DialogTitle>
 				</DialogHeader>
